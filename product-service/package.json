@@ -4,7 +4,8 @@
   "description": "BE services",
   "main": "handler.js",
   "scripts": {
-    "deploy": "sls deploy"
+    "deploy": "sls deploy",
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -17,6 +18,7 @@
   },
   "homepage": "https://github.com/veranika-savanchuk/node-js-aws-be#readme",
   "dependencies": {
+    "@serverless/event-mocks": "^1.1.1",
     "axios": "^0.21.0",
     "babel": "^6.23.0",
     "babel-core": "^6.26.3",
@@ -24,6 +26,8 @@
     "isomorphic-fetch": "^3.0.0"
   },
   "devDependencies": {
+    "jest": "^26.6.1",
+    "babel-jest": "^26.6.1",
     "serverless-webpack": "^5.3.5",
     "webpack": "^4.44.1",
     "webpack-cli": "^4.1.0",
