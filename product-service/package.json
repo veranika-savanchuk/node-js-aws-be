@@ -26,7 +26,8 @@
     "dotenv": "^8.2.0",
     "dotenv-webpack": "^5.1.0",
     "isomorphic-fetch": "^3.0.0",
-    "pg": "^8.4.2"
+    "pg": "^8.4.2",
+    "yup": "^0.29.3"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.12.1",

@@ -38,6 +38,13 @@ custom:
     includeModules: true
 
 functions:
+  addProduct:
+    handler: handler.addProduct
+    events:
+      - http:
+          path: products
+          method: post
+          cors: true
   getProductsList:
     handler: handler.getProductsList
     events:

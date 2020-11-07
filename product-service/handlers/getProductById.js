@@ -4,6 +4,8 @@ import { HEADERS, DB_OPTIONS } from "../constants";
 
 
 export const getProductById = async (event) => {
+    console.log('Lambda function has been invoked with event:', JSON.stringify(event, null, 2));
+
     const client = new Client(DB_OPTIONS);
     await client.connect();
 
@@ -36,8 +38,7 @@ export const getProductById = async (event) => {
             body: JSON.stringify({error: 'Internal Server Error'})
         };
     } finally {
-        // in case if error was occurred, connection will not close automatically
-        client.end(); // manual closing of connection
+        client.end();
     }
 };
 
