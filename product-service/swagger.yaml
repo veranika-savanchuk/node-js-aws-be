@@ -1,0 +1,78 @@
+---
+swagger: 2.0
+info:
+  description: Product API
+  version: 0.1
+  title: Product API
+host: ouhvwy8f4m.execute-api.eu-west-1.amazonaws.com
+paths:
+  /dev/products:
+    get:
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        "200":
+          description: Definition generated from Swagger Inspector
+          schema:
+            $ref: '#/definitions/Model0'
+  /dev/products/{productId}:
+    get:
+      produces:
+      - application/json
+      parameters:
+      - name: productId
+        in: path
+        description: 'Example values form path are: ''7567ec4b-b10c-48c5-9345-fc73c48a80aa'' and ''123'''
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Definition generated from Swagger Inspector
+          schema:
+            $ref: '#/definitions/Model1'
+        "404":
+          description: Definition generated from Swagger Inspector
+          schema:
+            $ref: '#/definitions/Model2'
+definitions:
+  Array:
+    properties:
+      id:
+        type: string
+      img:
+        type: string
+      count:
+        type: integer
+        format: int32
+      price:
+        type: number
+        format: double
+      title:
+        type: string
+      description:
+        type: string
+  Model0:
+    type: array
+    items:
+      $ref: '#/definitions/Array'
+  Model1:
+    properties:
+      id:
+        type: string
+      img:
+        type: string
+      count:
+        type: integer
+        format: int32
+      price:
+        type: number
+        format: double
+      title:
+        type: string
+      description:
+        type: string
+  Model2:
+    properties:
+      error:
+        type: string
