@@ -1,18 +1,20 @@
-import fetch from "isomorphic-fetch";
-import { FAKE_API, OPTIONS, HEADERS } from "../constants";
+import { Client } from 'pg';
+import { selectProductById } from '../sql/query';
+import { HEADERS, DB_OPTIONS } from "../constants";
 
 
 export const getProductById = async (event) => {
+    const client = new Client(DB_OPTIONS);
+    await client.connect();
+
     try {
-        const  { pathParameters: { productId } } = event;
+        const  { pathParameters: { productId = '' } = {} } = event;
 
-        const [res, body] = await fetch(FAKE_API, OPTIONS).then(r =>
-            Promise.all([Promise.resolve(r), r.text()]),
-        );
+        const res = await client.query(selectProductById, [productId]);
 
-        const data = JSON.parse(body);
+        const { rows } = res;
 
-        const productInfo = data.find(i => i.id === productId);
+        const productInfo = rows.find(i => i.id === productId);
 
         if(!productInfo) {
             return {
@@ -23,7 +25,7 @@ export const getProductById = async (event) => {
         }
 
         return {
-            statusCode: res.status,
+            statusCode: 200,
             headers: HEADERS,
             body: JSON.stringify(productInfo)
         };
@@ -33,6 +35,9 @@ export const getProductById = async (event) => {
             headers: HEADERS,
             body: JSON.stringify({error: 'Internal Server Error'})
         };
+    } finally {
+        // in case if error was occurred, connection will not close automatically
+        client.end(); // manual closing of connection
     }
 };
 
