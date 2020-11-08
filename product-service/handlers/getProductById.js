@@ -1,4 +1,5 @@
 import { Client } from 'pg';
+import validate from 'uuid-validate';
 import { selectProductById } from '../sql/query';
 import { HEADERS, DB_OPTIONS } from "../constants";
 
@@ -11,6 +12,15 @@ export const getProductById = async (event) => {
 
     try {
         const  { pathParameters: { productId = '' } = {} } = event;
+        const isValidUUID = validate(productId);
+
+        if (!isValidUUID) {
+            return {
+                statusCode: 400,
+                headers: HEADERS,
+                body: JSON.stringify({error: 'Incorrect uuid'})
+            };
+        }
 
         const res = await client.query(selectProductById, [productId]);
 
