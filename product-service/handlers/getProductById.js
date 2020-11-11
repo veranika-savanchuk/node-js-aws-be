@@ -1,18 +1,32 @@
-import fetch from "isomorphic-fetch";
-import { FAKE_API, OPTIONS, HEADERS } from "../constants";
+import { Client } from 'pg';
+import validate from 'uuid-validate';
+import { selectProductById } from '../sql/query';
+import { HEADERS, DB_OPTIONS } from "../constants";
 
 
 export const getProductById = async (event) => {
+    console.log('Lambda function has been invoked with event:', JSON.stringify(event, null, 2));
+
+    const client = new Client(DB_OPTIONS);
+    await client.connect();
+
     try {
-        const  { pathParameters: { productId } } = event;
+        const  { pathParameters: { productId = '' } = {} } = event;
+        const isValidUUID = validate(productId);
 
-        const [res, body] = await fetch(FAKE_API, OPTIONS).then(r =>
-            Promise.all([Promise.resolve(r), r.text()]),
-        );
+        if (!isValidUUID) {
+            return {
+                statusCode: 400,
+                headers: HEADERS,
+                body: JSON.stringify({error: 'Incorrect uuid'})
+            };
+        }
 
-        const data = JSON.parse(body);
+        const res = await client.query(selectProductById, [productId]);
 
-        const productInfo = data.find(i => i.id === productId);
+        const { rows } = res;
+
+        const productInfo = rows.find(i => i.id === productId);
 
         if(!productInfo) {
             return {
@@ -23,7 +37,7 @@ export const getProductById = async (event) => {
         }
 
         return {
-            statusCode: res.status,
+            statusCode: 200,
             headers: HEADERS,
             body: JSON.stringify(productInfo)
         };
@@ -33,6 +47,8 @@ export const getProductById = async (event) => {
             headers: HEADERS,
             body: JSON.stringify({error: 'Internal Server Error'})
         };
+    } finally {
+        client.end();
     }
 };
 
