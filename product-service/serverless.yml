@@ -15,12 +15,6 @@ service: product-service
 
 frameworkVersion: '2'
 
-provider:
-  name: aws
-  runtime: nodejs12.x
-  stage: dev
-  region: eu-west-1
-
 environment:
   PG_HOST: ${env:PG_HOST}
   PG_PORT: ${env:PG_PORT}
@@ -28,9 +22,31 @@ environment:
   PG_USERNAME: ${env:PG_USERNAME}
   PG_PASSWORD: ${env:PG_PASSWORD}
 
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: dev
+  region: eu-west-1
+
+  environment:
+    SNS_ARN:
+      Ref: SNSTopic
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action: "sqs:*"
+      Resource:
+        - Fn::GetAtt: [ SQSQueue, Arn ]
+
+    - Effect: Allow
+      Action: "sns:*"
+      Resource:
+        Ref: SNSTopic
+
 plugins:
   - serverless-webpack
   - serverless-dotenv-plugin
+  - serverless-offline
 
 custom:
   webpack:
@@ -64,3 +80,55 @@ functions:
             parameters:
               paths:
                 productId: true
+
+  catalogBatchProcess:
+    handler: handler.catalogBatchProcess
+    events:
+      - sqs:
+          batchSize: 5
+          arn: { Fn::GetAtt: [ SQSQueue, Arn ] }
+
+
+
+resources:
+  Outputs:
+    SQSQueueUrl:
+      Value:
+        Ref: SQSQueue
+
+    SQSQueueArn:
+      Value:
+        Fn::GetAtt: [ SQSQueue, Arn ]
+
+  Resources:
+    SQSQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: catalogProductsQueue
+
+    SNSTopic:
+      Type: "AWS::SNS::Topic"
+      Properties:
+        TopicName: "createProductTopic"
+
+    SNSSubscriptionImportSuccess:
+      Type: "AWS::SNS::Subscription"
+      Properties:
+        Endpoint: "${env:SUCCESS_EMAIL}"
+        Protocol: "email"
+        TopicArn:
+          Ref: "SNSTopic"
+        FilterPolicy: {
+          status: ["imported"]
+        }
+
+    SNSSubscriptionImportFail:
+      Type: "AWS::SNS::Subscription"
+      Properties:
+        Endpoint: "${env:FAIL_EMAIL}"
+        Protocol: "email"
+        TopicArn:
+          Ref: "SNSTopic"
+        FilterPolicy: {
+          status: ["fail"]
+        }
