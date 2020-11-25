@@ -20,6 +20,10 @@ provider:
   runtime: nodejs12.x
   stage: dev
   region: eu-west-1
+
+  environment:
+    SQS_QUEUE_URL: "${cf:product-service-${self:provider.stage}.SQSQueueUrl}"
+
   iamRoleStatements:
     - Effect: "Allow"
       Action: "s3:ListBucket"
@@ -30,6 +34,12 @@ provider:
         - "s3:*"
       Resource:
         - "arn:aws:s3:::pet-shop-import/*"
+    - Effect: "Allow"
+      Action:
+        - "sqs:*"
+      Resource:
+        - "${cf:product-service-${self:provider.stage}.SQSQueueArn}"
+
 
 plugins:
   - serverless-webpack

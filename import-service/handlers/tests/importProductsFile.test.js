@@ -1,6 +1,7 @@
 import * as awsMock from 'aws-sdk-mock'
 import { importProductsFile } from '../importProductsFile'
 
+
 describe('importProductsFile', () => {
     it('should return url', async () => {
         const mockUrl = '/importMock';

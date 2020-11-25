@@ -2,10 +2,13 @@ import * as AWS from 'aws-sdk';
 import * as csv from 'csv-parser';
 import { BUCKET_NAME, AWS_REGION } from '../constants';
 
+const SQS_QUEUE_URL = process.env.SQS_QUEUE_URL;
+
 export const importFileParser = event => {
     console.log("importFileParser Lambda started execution");
 
     const s3 = new AWS.S3({ region: AWS_REGION});
+    const sqs = new AWS.SQS();
 
     event.Records.forEach(record => {
         const objectKey = record.s3.object.key;
@@ -16,7 +19,16 @@ export const importFileParser = event => {
 
         s3Stream.pipe(csv())
             .on('data', data => {
-                console.log(data);
+                try{
+                    sqs.sendMessage({
+                        QueueUrl: SQS_QUEUE_URL,
+                        MessageBody: JSON.stringify(data),
+                    }, () => {
+                        console.log('Sent ', data)
+                    });
+                }catch (e) {
+                    console.log('Fail', e)
+                }
             })
             .on('end', async () => {
                 const newObjectKey = objectKey.replace('uploaded', 'parsed');
